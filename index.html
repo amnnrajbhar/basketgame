@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Catcher Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 100%;
+            width: fit-content;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .game-title {
+            font-size: clamp(1.5em, 4vw, 2.5em);
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48cae4, #ff9ff3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: clamp(0.9em, 2.5vw, 1.2em);
+            font-weight: bold;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .instructions {
+            font-size: clamp(0.7em, 2vw, 0.9em);
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .copyright {
+            text-align: center;
+            font-size: clamp(0.6em, 1.8vw, 0.8em);
+            opacity: 0.8;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .copyright a {
+            color: #feca57;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .copyright a:hover {
+            color: #ff6b6b;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+
+        #gameCanvas {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            background: linear-gradient(180deg, #87ceeb 0%, #98fb98 100%);
+            box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            max-width: 90vw;
+            box-sizing: border-box;
+        }
+
+        .game-over h2 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-size: clamp(1.2em, 4vw, 2em);
+        }
+
+        .game-over p {
+            font-size: clamp(0.9em, 2.5vw, 1.1em);
+            margin-bottom: 10px;
+        }
+
+        .game-over button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: clamp(0.9em, 2.5vw, 1.1em);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+                overflow-x: hidden;
+            }
+            
+            .game-container {
+                padding: 15px;
+                border-radius: 15px;
+                margin: 0;
+            }
+            
+            .game-header {
+                margin-bottom: 15px;
+            }
+            
+            .score-board {
+                justify-content: center;
+                text-align: center;
+            }
+            
+            .instructions {
+                line-height: 1.4;
+                padding: 0 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 10px;
+                border-radius: 10px;
+            }
+            
+            .game-over {
+                padding: 15px;
+                margin: 10px;
+            }
+        }
+
+        /* Touch controls for mobile */
+        .mobile-controls {
+            display: none;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .mobile-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .mobile-btn:active {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            .mobile-controls {
+                display: flex;
+            }
+            
+            .instructions {
+                margin-bottom: 5px;
+            }
+        }
+
+        .game-over button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .bounce {
+            animation: bounce 0.6s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">🍎 Fruit Catcher 🍊</h1>
+            <div class="score-board">
+                <div>Score: <span id="score">0</span></div>
+                <div>High Score: <span id="highScore">0</span></div>
+            </div>
+            <div class="instructions">
+                Use ← → arrow keys to move • Catch fruits (+10 points) • Avoid bombs! 💣
+            </div>
+        </div>
+        
+        <div class="copyright">
+            © 2025 <a href="https://amnnrajbhar.github.io/info/" target="_blank">Aman Rajbhar</a>
+        </div>
+        
+        <canvas id="gameCanvas" width="600" height="400"></canvas>
+        
+        <div class="mobile-controls">
+            <div class="mobile-btn" id="leftBtn">←</div>
+            <div class="mobile-btn" id="rightBtn">→</div>
+        </div>
+        
+        <div id="gameOver" class="game-over">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <p id="newHighScore" style="color: #feca57; display: none;">🎉 New High Score! 🎉</p>
+            <button onclick="startGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gameContainer = document.querySelector('.game-container');
+
+        // Game state
+        let gameRunning = false;
+        let score = 0;
+        let highScore = parseInt(localStorage.getItem('fruitCatcherHighScore') || '0');
+        let basketX = canvas.width / 2 - 40;
+        let basketSpeed = 8;
+        let items = [];
+        let gameSpeed = 1;
+        let canvasScale = 1;
+
+        // Responsive canvas setup
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const maxWidth = Math.min(600, window.innerWidth - 40);
+            const maxHeight = Math.min(400, window.innerHeight - 200);
+            
+            if (maxWidth < 600) {
+                canvasScale = maxWidth / 600;
+                canvas.style.width = maxWidth + 'px';
+                canvas.style.height = (400 * canvasScale) + 'px';
+            } else {
+                canvasScale = 1;
+                canvas.style.width = '600px';
+                canvas.style.height = '400px';
+            }
+        }
+
+        // Initialize responsive canvas
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Game objects
+        const basket = { width: 80, height: 20 };
+        const fruits = ['🍎', '🍊', '🍌', '🍇', '🍓', '🥝', '🍑', '🥭'];
+        const bomb = '💣';
+
+        // Update display
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('highScore').textContent = highScore;
+        }
+
+        // Create falling item
+        function createItem() {
+            const isBomb = Math.random() < 0.15; // 15% chance for bomb
+            items.push({
+                x: Math.random() * (canvas.width - 30),
+                y: -30,
+                width: 30,
+                height: 30,
+                speed: 2 + Math.random() * 3 + gameSpeed * 0.5,
+                type: isBomb ? 'bomb' : 'fruit',
+                emoji: isBomb ? bomb : fruits[Math.floor(Math.random() * fruits.length)],
+                rotation: 0
+            });
+        }
+
+        // Draw game objects
+        function drawBasket() {
+            // Basket shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(basketX + 2, canvas.height - basket.height + 2, basket.width, basket.height);
+            
+            // Basket
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(basketX, canvas.height - basket.height, basket.width, basket.height);
+            
+            // Basket rim
+            ctx.fillStyle = '#A0522D';
+            ctx.fillRect(basketX, canvas.height - basket.height, basket.width, 5);
+            
+            // Basket weave pattern
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < basket.width; i += 10) {
+                ctx.beginPath();
+                ctx.moveTo(basketX + i, canvas.height - basket.height);
+                ctx.lineTo(basketX + i, canvas.height);
+                ctx.stroke();
+            }
+        }
+
+        function drawItems() {
+            items.forEach(item => {
+                ctx.save();
+                ctx.translate(item.x + item.width/2, item.y + item.height/2);
+                ctx.rotate(item.rotation);
+                ctx.font = '24px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Add glow effect for bombs
+                if (item.type === 'bomb') {
+                    ctx.shadowColor = '#ff0000';
+                    ctx.shadowBlur = 10;
+                }
+                
+                ctx.fillText(item.emoji, 0, 0);
+                ctx.restore();
+                
+                // Update rotation for visual effect
+                item.rotation += 0.1;
+            });
+        }
+
+        // Collision detection
+        function checkCollisions() {
+            items.forEach((item, index) => {
+                if (item.x < basketX + basket.width &&
+                    item.x + item.width > basketX &&
+                    item.y < canvas.height &&
+                    item.y + item.height > canvas.height - basket.height) {
+                    
+                    if (item.type === 'fruit') {
+                        score += 10;
+                        gameContainer.classList.add('bounce');
+                        setTimeout(() => gameContainer.classList.remove('bounce'), 600);
+                        
+                        // Increase game speed gradually
+                        gameSpeed += 0.02;
+                    } else {
+                        // Bomb hit - game over
+                        gameContainer.classList.add('shake');
+                        setTimeout(() => gameContainer.classList.remove('shake'), 500);
+                        endGame();
+                        return;
+                    }
+                    
+                    items.splice(index, 1);
+                    updateScore();
+                }
+            });
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update items
+            items.forEach((item, index) => {
+                item.y += item.speed;
+                if (item.y > canvas.height) {
+                    items.splice(index, 1);
+                }
+            });
+
+            // Create new items
+            if (Math.random() < 0.02 + gameSpeed * 0.005) {
+                createItem();
+            }
+
+            // Draw everything
+            drawBasket();
+            drawItems();
+            
+            // Check collisions
+            checkCollisions();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Keyboard controls
+        const keys = {};
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        function handleInput() {
+            if (!gameRunning) return;
+            
+            if (keys['ArrowLeft'] && basketX > 0) {
+                basketX -= basketSpeed;
+            }
+            if (keys['ArrowRight'] && basketX < canvas.width - basket.width) {
+                basketX += basketSpeed;
+            }
+            
+            requestAnimationFrame(handleInput);
+        }
+
+        // Game control functions
+        function startGame() {
+            gameRunning = true;
+            score = 0;
+            basketX = canvas.width / 2 - 40;
+            items = [];
+            gameSpeed = 1;
+            
+            document.getElementById('gameOver').style.display = 'none';
+            updateScore();
+            
+            gameLoop();
+            handleInput();
+        }
+
+        function endGame() {
+            gameRunning = false;
+            
+            // Check for high score
+            let newHighScore = false;
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('fruitCatcherHighScore', highScore.toString());
+                newHighScore = true;
+            }
+            
+            // Show game over screen
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('newHighScore').style.display = newHighScore ? 'block' : 'none';
+            document.getElementById('gameOver').style.display = 'block';
+            
+            updateScore();
+        }
+
+        // Mobile touch controls
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        
+        leftBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            keys['ArrowLeft'] = true;
+        });
+        
+        leftBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            keys['ArrowLeft'] = false;
+        });
+        
+        rightBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            keys['ArrowRight'] = true;
+        });
+        
+        rightBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            keys['ArrowRight'] = false;
+        });
+
+        // Mouse controls for desktop
+        leftBtn.addEventListener('mousedown', () => keys['ArrowLeft'] = true);
+        leftBtn.addEventListener('mouseup', () => keys['ArrowLeft'] = false);
+        rightBtn.addEventListener('mousedown', () => keys['ArrowRight'] = true);
+        rightBtn.addEventListener('mouseup', () => keys['ArrowRight'] = false);
+
+        // Initialize game
+        updateScore();
+        
+        // Draw initial state
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBasket();
+        
+        // Add start message
+        ctx.font = '24px Arial';
+        ctx.fillStyle = '#333';
+        ctx.textAlign = 'center';
+        ctx.fillText('Press Arrow Keys to Start!', canvas.width/2, canvas.height/2);
+        
+        // Start game on first keypress or touch
+        document.addEventListener('keydown', function startOnKeypress(e) {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                document.removeEventListener('keydown', startOnKeypress);
+                startGame();
+            }
+        });
+
+        // Start game on mobile button press
+        leftBtn.addEventListener('touchstart', function startOnTouch() {
+            leftBtn.removeEventListener('touchstart', startOnTouch);
+            rightBtn.removeEventListener('touchstart', startOnTouch);
+            if (!gameRunning) startGame();
+        });
+
+        rightBtn.addEventListener('touchstart', function startOnTouch() {
+            leftBtn.removeEventListener('touchstart', startOnTouch);
+            rightBtn.removeEventListener('touchstart', startOnTouch);
+            if (!gameRunning) startGame();
+        });
+    </script>
+</body>
+</html>
